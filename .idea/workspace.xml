@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7146dc0e-19fa-4000-8294-7a246262886f" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/recommender/src/CalculateSimilarity.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommender/src/CalculateSimilarity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommender/src/Recommender.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommender/src/Recommender.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Recommender.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Recommender.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/recommender/src/Recommender.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" column="29" lean-forward="true" selection-start-line="8" selection-start-column="29" selection-end-line="8" selection-end-column="29" />
+            <state relative-caret-position="177">
+              <caret line="18" column="4" selection-start-line="18" selection-start-column="4" selection-end-line="18" selection-end-column="4" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -27,14 +27,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CalculateSimilarity.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="CalculateSimilarity.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/recommender/src/CalculateSimilarity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="253">
-              <caret line="65" column="18" lean-forward="true" selection-start-line="65" selection-start-column="18" selection-end-line="65" selection-end-column="18" />
+            <state relative-caret-position="113">
+              <caret line="64" column="10" selection-start-line="64" selection-start-column="10" selection-end-line="64" selection-end-column="10" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="method#userEuclidDist#0;class#CalculateSimilarity#0" />
                 <element signature="method#usercosineDist#0;class#CalculateSimilarity#0" />
               </folding>
             </state>
@@ -89,8 +88,8 @@
         <option value="$PROJECT_DIR$/recommender/src/entity/Item.java" />
         <option value="$PROJECT_DIR$/recommender/src/entity/Score.java" />
         <option value="$PROJECT_DIR$/recommender/src/entity/User.java" />
-        <option value="$PROJECT_DIR$/recommender/src/Recommender.java" />
         <option value="$PROJECT_DIR$/recommender/src/CalculateSimilarity.java" />
+        <option value="$PROJECT_DIR$/recommender/src/Recommender.java" />
       </list>
     </option>
   </component>
@@ -225,12 +224,12 @@
       <option name="presentableId" value="Default" />
       <updated>1583610233056</updated>
       <workItem from="1583610237629" duration="6661000" />
-      <workItem from="1583864647306" duration="2255000" />
+      <workItem from="1583864647306" duration="3333000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8916000" />
+    <option name="totallyTimeSpent" value="9994000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="650" y="0" width="630" height="800" extended-state="6" />
@@ -293,7 +292,6 @@
           <caret line="48" column="12" lean-forward="true" selection-start-line="48" selection-start-column="12" selection-end-line="48" selection-end-column="12" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="method#userEuclidDist#0;class#CalculateSimilarity#0" />
             <element signature="method#usercosineDist#0;class#CalculateSimilarity#0" />
           </folding>
         </state>
@@ -337,16 +335,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/recommender/src/Recommender.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="29" lean-forward="true" selection-start-line="8" selection-start-column="29" selection-end-line="8" selection-end-column="29" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/recommender/src/entity/User.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
@@ -359,12 +347,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/recommender/src/CalculateSimilarity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="253">
-          <caret line="65" column="18" lean-forward="true" selection-start-line="65" selection-start-column="18" selection-end-line="65" selection-end-column="18" />
+        <state relative-caret-position="113">
+          <caret line="64" column="10" selection-start-line="64" selection-start-column="10" selection-end-line="64" selection-end-column="10" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="method#userEuclidDist#0;class#CalculateSimilarity#0" />
             <element signature="method#usercosineDist#0;class#CalculateSimilarity#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/recommender/src/Recommender.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="177">
+          <caret line="18" column="4" selection-start-line="18" selection-start-column="4" selection-end-line="18" selection-end-column="4" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
