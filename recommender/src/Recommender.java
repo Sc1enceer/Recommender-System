@@ -1,1 +1,224 @@
-import entity.Item;import entity.User;import java.util.ArrayList;import java.util.HashSet;import java.util.Set;public class Recommender {    private Set<User> users;    private ArrayList<Item> items;    double[][] similarityMatrix;    int numItems;    public Recommender(Set<User> users, ArrayList<Item> items) {        this.users = users;        this.items = items;        this.numItems = items.size();        this.similarityMatrix = constructSimilarityMatrix(items);    }    // constructing the similarity matrix    public double[][] constructSimilarityMatrix(ArrayList<Item> items){        double[][] matrix = new double[numItems][numItems];        CalculateSimilarity calculator = new CalculateSimilarity();        for(int i = 1; i<= items.size(); i++){            for(int j = 1; j <= items.size(); j++){                Set<User> commonUser = findUsers(users, items.get(i), items.get(j));                double similarityScore = calculator.itemCosineDist(items.get(i), items.get(j), users);                matrix[i-1][j-1] = similarityScore;            }        }        return matrix;    }    private Set<User> findUsers(Set<User> users, Item item1, Item item2){        Set<User> commonUser = new HashSet<>();        for(User user : users){            if (user.getRatedItems().contains(item1) && user.getRatedItems().contains(item2)){                commonUser.add(user);            }        }        return commonUser;    }    private double predictRating(User user, Item item){        double nominator = 0.0;        double denominator = 0.0;        int index = items.indexOf(item);        for(int i = 0; i < numItems; i++){            if(i != index){                nominator += similarityMatrix[i][index] * user.getItemScores(items.get(i));                denominator += similarityMatrix[i][index];            }        }        return nominator/denominator;    }}
+import entity.Item;
+import entity.MatrixEntry;
+import entity.Pair;
+import entity.User;
+import entity.UserEntry;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.stream.IntStream;
+
+public class Recommender {
+	@Deprecated
+    private Set<User> users;
+	@Deprecated
+    private ArrayList<Item> items;
+	
+	private DataBase similarityDataBase;
+    
+    private HashMap<Integer, Set<UserEntry>> data;
+    int numItems;
+    
+    @Deprecated
+    public Recommender(Set<User> users, ArrayList<Item> items) {
+        this.users = users;
+        this.items = items;
+        this.numItems = items.size();
+    }
+    
+    public Recommender(HashMap<Integer, Set<UserEntry>> data) {
+    	this.data = data;
+    	this.numItems = data.size();
+    }
+
+    public void autoConstructSimilarityDataBase(String database) {
+    	   	
+        CalculateSimilarity calculator = new CalculateSimilarity();
+        calculator.calculateAverageRatings(data.values());
+        
+        int sum = 0;
+        for(int a = 1; a<=numItems; a++)
+        	for(int b = a; b<=numItems; b++)
+        		sum++;
+    	
+        int[] numArr = {0, sum};
+        
+        //Sorts the items in terms of their id
+        ArrayList<Integer> sortedItems = new ArrayList<Integer>(data.keySet());
+        Collections.sort(sortedItems);
+        
+        ArrayList<MatrixEntry> entries = new ArrayList<MatrixEntry>();
+        
+        System.out.println("IN PROGRESS: Constructing similarity matrix...");
+    	IntStream.range(0,numItems).parallel().forEach(i -> {
+			for(int j = i+1; j < numItems; j++) {
+        		Set<UserEntry> setOne = data.get(sortedItems.get(i)); //A set of all the user entries for item i
+        		Set<Integer> setOneIDs = new HashSet<>();
+        		Iterator<UserEntry> itr = setOne.iterator();
+        		while(itr.hasNext())
+        			setOneIDs.add(itr.next().getUserID()); //Add all the user IDs for item i to a new set
+        		
+        		Set<UserEntry> setTwo = data.get(sortedItems.get(j)); //A set of all the user entries for item j
+        		Set<Integer> setTwoIDs = new HashSet<>();
+        		itr = setTwo.iterator();
+        		while(itr.hasNext())
+        			setTwoIDs.add(itr.next().getUserID()); //Add all the user IDs for item j to a new set
+        		
+        		//Gets the matching IDs which rated both items
+        		setOneIDs.retainAll(setTwoIDs);
+        		
+        		//Make common pairs (match entries from the same user for both item i and j and put them as a pair)
+        		Set<Pair> commonEntryPairs = new HashSet<>();
+        		Iterator<Integer> iterator = setOneIDs.iterator();
+        		while(iterator.hasNext()) {
+        			UserEntry first = null;
+        			UserEntry second = null;
+        			Integer userID = iterator.next();
+        			itr = setOne.iterator();
+        			while(itr.hasNext()) {
+        				UserEntry entry = itr.next();
+        				if(entry.getUserID() == userID)
+        					first = entry;
+        			}
+        			itr = setTwo.iterator();
+        			while(itr.hasNext()) {
+        				UserEntry entry = itr.next();
+        				if(entry.getUserID() == userID)
+        					second = entry;
+        			}
+        			Pair pair = new Pair(first, second);
+        			commonEntryPairs.add(pair);
+        		}
+                
+        		//Find the consine distance between the two items
+                Double similarityScore = calculator.itemCosineDist(commonEntryPairs);
+                
+                if(similarityScore != null)
+                	entries.add(new MatrixEntry(sortedItems.get(i), sortedItems.get(j), similarityScore));
+	        }
+			numArr[0] = numArr[0] + (numItems-i);
+			System.out.println(numArr[0] + " / " + numArr[1] + " items complete! (" + ((double) numArr[0] / (double) numArr[1]) * 100 + "%)");
+    	});
+	    	
+    	System.out.println("COMPLETE: Constructed similarity matrix!");
+    	System.out.println("IN PROGRESS: Storing similarity matrix...");
+    	
+		try {
+			
+			DataBase db = new DataBase(database);
+	    	
+	    	String sql = "CREATE TABLE IF NOT EXISTS similarityTable(\n"
+		            + "    item_a integer NOT NULL,\n"
+		            + "    item_b integer NOT NULL,\n"
+		            + "    score double NOT NULL\n"
+		            + ");";
+		
+			db.createNewTable(sql);
+	    	
+			String sql2 = "INSERT INTO similarityTable(item_a, item_b, score) VALUES(?,?,?)";
+	    	Connection conn = DriverManager.getConnection(db.getURL());
+	        PreparedStatement pstmt = conn.prepareStatement(sql2);
+	        
+	        conn.setAutoCommit(false);
+	    	
+            int count = 0;
+            int batchSize = 100;
+            
+	    	for(MatrixEntry entry : entries) {
+	    		pstmt.setInt(1, entry.getItemA());
+	            pstmt.setInt(2, entry.getItemB());
+	            pstmt.setDouble(3, entry.getScore());
+	            pstmt.addBatch();
+	            count++;
+	            if(count % batchSize == 0)
+	            	pstmt.executeBatch();
+	    	}
+	    	
+	    	pstmt.executeBatch();
+	    	conn.commit();
+	        conn.setAutoCommit(true);
+	        
+	    	System.out.println("COMPLETE: Stored similarity matrix! (" + count + " entries)");
+	    	
+	    	similarityDataBase = db;
+    	} catch(SQLException e) {
+    		System.out.println("ERROR: Adding entries into the database");
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void setSimilarityDataBase(DataBase db) {
+    	similarityDataBase = db;
+    }
+    
+    public Double getSimilarityScore(int itemA, int itemB) {
+    	
+    	if(itemA == itemB)
+    		return 1.0;
+    	
+    	int i1 = (itemA < itemB) ? itemA : itemB;
+    	int i2 = (itemB > itemA) ? itemB : itemA;
+    	
+    	String sql = "SELECT * FROM similarityTable WHERE item_a = " + Integer.toString(i1) + " AND item_b = " + Integer.toString(i2);
+    	
+    	try {
+    	
+    		Connection conn = DriverManager.getConnection(similarityDataBase.getURL());
+	    	Statement stmt = conn.createStatement();
+	    	ResultSet rs = stmt.executeQuery(sql);
+	    	
+	    	while (rs.next())
+			    return rs.getDouble("score");
+    	
+    	} catch(SQLException e) {
+    		e.printStackTrace();
+    	}
+    	
+    	return null;
+    }
+
+    @Deprecated
+    private Set<User> findUsers(Set<User> users, Item item1, Item item2){
+        Set<User> commonUser = new HashSet<>();
+        for(User user : users){
+            if (user.getRatedItems().contains(item1) && user.getRatedItems().contains(item2)){
+                commonUser.add(user);
+            }
+        }
+        return commonUser;
+    }
+
+    @Deprecated
+    private double predictRating(User user, Item item){
+        double nominator = 0.0;
+        double denominator = 0.0;
+
+        int index = items.indexOf(item);
+        for(int i = 0; i < numItems; i++){
+            if(i != index){
+                //nominator += similarityMatrix[i][index] * user.getItemScores(items.get(i));
+                //denominator += similarityMatrix[i][index];
+            }
+        }
+        return nominator/denominator;
+    }
+    
+    //public Float[][] getSimilarityMatrix() {
+    //	return similarityMatrix;
+    //}
+
+}
