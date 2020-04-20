@@ -23,22 +23,12 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 public class Recommender {
-	@Deprecated
-    private Set<User> users;
-	@Deprecated
-    private ArrayList<Item> items;
-	
+
 	private DataBase similarityDataBase;
     
     private HashMap<Integer, Set<UserEntry>> data;
     int numItems;
     
-    @Deprecated
-    public Recommender(Set<User> users, ArrayList<Item> items) {
-        this.users = users;
-        this.items = items;
-        this.numItems = items.size();
-    }
     
     public Recommender(HashMap<Integer, Set<UserEntry>> data) {
     	this.data = data;
@@ -191,34 +181,5 @@ public class Recommender {
     	return null;
     }
 
-    @Deprecated
-    private Set<User> findUsers(Set<User> users, Item item1, Item item2){
-        Set<User> commonUser = new HashSet<>();
-        for(User user : users){
-            if (user.getRatedItems().contains(item1) && user.getRatedItems().contains(item2)){
-                commonUser.add(user);
-            }
-        }
-        return commonUser;
-    }
-
-    @Deprecated
-    private double predictRating(User user, Item item){
-        double nominator = 0.0;
-        double denominator = 0.0;
-
-        int index = items.indexOf(item);
-        for(int i = 0; i < numItems; i++){
-            if(i != index){
-                //nominator += similarityMatrix[i][index] * user.getItemScores(items.get(i));
-                //denominator += similarityMatrix[i][index];
-            }
-        }
-        return nominator/denominator;
-    }
-    
-    //public Float[][] getSimilarityMatrix() {
-    //	return similarityMatrix;
-    //}
 
 }
