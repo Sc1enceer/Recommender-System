@@ -9,14 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
-import entity.User;
 import entity.UserEntry;
-import entity.Item;
 
 public class DataBase {
 	
@@ -47,20 +41,6 @@ public class DataBase {
 	
 	public boolean exists() {
 		return alreadyExisted;
-	}
-	
-	public boolean tableExists(String name) {
-        try (Connection conn = DriverManager.getConnection(url);
-        		Statement stmt = conn.createStatement()) {
-            // Check if table exists
-        	
-        	DatabaseMetaData meta = conn.getMetaData();
-            ResultSet rs = meta.getTables(null, null, name, null);
-            return rs.next();
-            
-        } catch (SQLException e) {
-            return false;
-        }
 	}
 	
     public void createNewTable(String sql) {
@@ -122,101 +102,39 @@ public class DataBase {
 			e.printStackTrace();
 		}
     }
-
-    /*
-     * DECRECATED METHOD - DO NOT USE
-     */
-    public ArrayList<Item> contructItems() {
-    	
-    	ArrayList<Item> items = new ArrayList<Item>();
-    	
-    	try {
-        	Connection conn = DriverManager.getConnection(url);
-        	Statement stmt = conn.createStatement();
-        	ResultSet rs = stmt.executeQuery("SELECT DISTINCT itemid FROM userRatings");
-        	
-        	while (rs.next()) {
-    		    int id = rs.getInt("itemid");
-    		    items.add(new Item(id));
-        	}
-    	} catch(SQLException e) {
-    		e.printStackTrace();
-    	}
-    	
-    	return items;
-    }
     
-    /*
-     * DECRECATED METHOD - DO NOT USE
-     */
-    public Set<User> constructUsers() {
+    public HashMap<Integer, HashMap<Integer, UserEntry>> contructItemsHash() {
     	
-    	Set<User> users = new HashSet<>();
+    	HashMap<Integer, HashMap<Integer, UserEntry>> entries = new HashMap<Integer, HashMap<Integer, UserEntry>>();
     	
-    	try {
-        	Connection conn = DriverManager.getConnection(url);
-        	Statement stmt = conn.createStatement();
-        	ResultSet rs = stmt.executeQuery("SELECT DISTINCT userid FROM userRatings");
-        	
-        	while (rs.next()) {
-    		    int userid = rs.getInt("userid");
-    		    User user = new User(userid);
-    		    users.add(user);
-        	}
- 
-        	for(User user : users) {
-        		ResultSet itemRatings = stmt.executeQuery("SELECT itemid, rating FROM userRatings WHERE userid='" + Integer.toString(user.getUserId()) + "'");
-        		while(itemRatings.next()) {
-        			int item = itemRatings.getInt("itemid");
-        			double rating = rs.getDouble("rating");
-        			user.rate(new Item(item), rating);
-        		}
-        	}
-        	
-    	} catch(SQLException e) {
-    		e.printStackTrace();
-    	}
-    	
-    	return users;
-    }
-    
-    public HashMap<Integer, Set<UserEntry>> contructItemsHash() {
-    	
-    	HashMap<Integer, Set<UserEntry>> entries = new HashMap<Integer, Set<UserEntry>>();
-    	
-    	try {
-        	Connection conn = DriverManager.getConnection(url);
-        	Statement stmt = conn.createStatement();
-        	ResultSet rs = stmt.executeQuery("SELECT DISTINCT itemid FROM userRatings");
-        	
-        	ArrayList<Integer> items = new ArrayList<Integer>();
-        	while (rs.next()) {
-    		    int id = rs.getInt("itemid");
-    		    items.add(id);
-        	}
-        	
-        	int count = 0;
-        	for(Integer itemID : items) {
-        		ResultSet entry = stmt.executeQuery("SELECT userid, rating, timestamp FROM userRatings WHERE itemid='" + Integer.toString(itemID) + "'");
-        		Set<UserEntry> userEntries = new HashSet<>();
-        		while(entry.next()) {
-        			int item = entry.getInt("userid");
-        			float rating = entry.getFloat("rating");
-        			int timestamp = entry.getInt("timestamp");
-        			UserEntry ue = new UserEntry(item, rating, timestamp);
-        			userEntries.add(ue);
-        		}
-        		count++;
-        		if(count == items.size() || count % 1000 == 0)
-        			System.out.println(count + "/" + items.size() + " completed! (" + ((double) count / (double) items.size()) * 100 + "%)");
-        		entries.put(itemID, userEntries);
-        	}
- 
-    	} catch(SQLException e) {
-    		e.printStackTrace();
-    	}
-    	
-    	return entries;
+		try {
+			Connection conn = DriverManager.getConnection(url);
+			Statement stmt = conn.createStatement();
+	    	ResultSet rs = stmt.executeQuery("SELECT * FROM userRatings");
+	    	
+	    	while (rs.next()) {
+	    		int user = rs.getInt("userid");
+	    		int item = rs.getInt("itemid");
+	        	double rating = rs.getDouble("rating");
+	        	int timestamp = rs.getInt("timestamp");
+	        	
+	        	HashMap<Integer, UserEntry> temp;
+	        	if(entries.containsKey(item)) {
+	        		temp = entries.get(item);
+	        	} else {
+	        		temp = new HashMap<>();
+	        	}
+	        	temp.put(user, new UserEntry(user, rating, timestamp));
+	        	
+	        	entries.put(item, temp);
+	    	}
+	    	
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return entries;
     }
     
     public String getURL() {

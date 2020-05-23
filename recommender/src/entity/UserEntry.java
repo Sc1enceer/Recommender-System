@@ -1,16 +1,12 @@
 package entity;
 
-import java.io.Serializable;
-
-public class UserEntry implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+public class UserEntry {
 	
 	private int userid;
-	private float rating;
+	private double rating;
 	private int timestamp;
 	
-	public UserEntry(int userid, float rating, int timestamp) {
+	public UserEntry(int userid, double rating, int timestamp) {
 		this.userid = userid;
 		this.rating = rating;
 		this.timestamp = timestamp;
@@ -20,7 +16,7 @@ public class UserEntry implements Serializable {
 		return userid;
 	}
 	
-	public float getRating() { //Gets the rating of this entry
+	public double getRating() { //Gets the rating of this entry
 		return rating;
 	}
 	
